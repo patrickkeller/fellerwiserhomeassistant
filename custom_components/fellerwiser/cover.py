@@ -18,8 +18,7 @@ from .const import (
 # Import the device class from the component that you want to support
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.cover import (
-    ATTR_POSITION, ATTR_TILT_POSITION, PLATFORM_SCHEMA, CoverEntity,
-    SUPPORT_OPEN, SUPPORT_CLOSE, SUPPORT_SET_POSITION, SUPPORT_STOP, SUPPORT_SET_TILT_POSITION
+    ATTR_POSITION, ATTR_TILT_POSITION, PLATFORM_SCHEMA, CoverEntity, CoverEntityFeature
 )
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -155,7 +154,7 @@ class FellerCover(CoverEntity):
     @property
     def supported_features(self):
         return (
-            SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_SET_POSITION | SUPPORT_STOP | SUPPORT_SET_TILT_POSITION
+            CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.SET_POSITION | CoverEntityFeature.STOP | CoverEntityFeature.SET_TILT_POSITION | CoverEntityFeature.OPEN_TILT | CoverEntityFeature.CLOSE_TILT
         )
 
     def open_cover(self, **kwargs: Any) -> None:
@@ -185,6 +184,16 @@ class FellerCover(CoverEntity):
     def stop_cover(self, **kwargs: Any) -> None:
         ip = self._host
         response = requests.put("http://"+ip+"/api/loads/"+self._id+"/ctrl", headers= {'authorization':'Bearer ' + self._apikey}, json={'button': "stop", 'event': 'click'})
+        _LOGGER.info(response.json())
+
+    def open_cover_tilt(self, **kwargs: Any) -> None:
+        ip = self._host
+        response = requests.put("http://"+ip+"/api/loads/"+self._id+"/ctrl", headers= {'authorization':'Bearer ' + self._apikey}, json={'button': "up", 'event': 'click'})
+        _LOGGER.info(response.json())
+
+    def close_cover_tilt(self, **kwargs: Any) -> None:
+        ip = self._host
+        response = requests.put("http://"+ip+"/api/loads/"+self._id+"/ctrl", headers= {'authorization':'Bearer ' + self._apikey}, json={'button': "down", 'event': 'click'})
         _LOGGER.info(response.json())
 
     def set_cover_tilt_position(self, **kwargs: Any) -> None:

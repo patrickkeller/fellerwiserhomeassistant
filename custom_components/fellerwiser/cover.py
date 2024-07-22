@@ -7,6 +7,7 @@ import websockets
 import asyncio
 import json
 import socket
+import math
 
 
 import voluptuous as vol
@@ -204,7 +205,7 @@ class FellerCover(CoverEntity):
         scale = (tgt_max - tgt_min) / (src_max - src_min)
         translated_value = tgt_min + (value - src_min) * scale
     
-        return translated_value
+        return math.floor(translated_value) # round to the nearest int
 
     def updatestate(self):
         ip = self._host

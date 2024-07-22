@@ -55,7 +55,7 @@ async def hello(covers, hass, host, apikey):
                     for l in covers:
                         if l.unique_id == "cover-"+str(data["load"]["id"]):
                             _LOGGER.info("found entity to update")
-                            l.updateExternal(data["load"]["state"]["level"], data["load"]["state"]["moving"])
+                            l.updateExternal(data["load"]["state"]["level"], data["load"]["state"]["moving"], data["load"]["state"]["tilt"])
         except socket.gaierror:
             _LOGGER.info(
                 'Socket error - retrying connection in {} sec (Ctrl-C to quit)'.format(10))

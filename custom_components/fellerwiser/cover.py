@@ -196,6 +196,7 @@ class FellerCover(CoverEntity):
 
     #ha: 0 = closed/no tilt, 100 = open/max tilt
     #feller: 0 = closed/no tilt, 9 = open/max tilt
+    @staticmethod
     def translate_cover_tilt_position(value, src_range=(0, 9), tgt_range=(0, 100)):
         src_min, src_max = src_range
         tgt_min, tgt_max = tgt_range

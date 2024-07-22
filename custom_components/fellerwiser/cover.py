@@ -16,7 +16,7 @@ from .const import (
 
 # Import the device class from the component that you want to support
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.cover import (ATTR_POSITION, PLATFORM_SCHEMA,
+from homeassistant.components.cover import (ATTR_POSITION, ATTR_TILT_POSITION, PLATFORM_SCHEMA,
                                             CoverEntity)
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -105,6 +105,7 @@ class FellerCover(CoverEntity):
         self._is_closed = False
         self._is_partially_opened = False
         self._position = None
+        self._tilt = None
         self._host = host
         self._apikey = apikey
 
@@ -119,6 +120,10 @@ class FellerCover(CoverEntity):
     @property
     def current_cover_position(self):
         return self._position
+    
+    @property
+    def current_cover_tilt_position(self):
+        return self._tilt
 
     @property
     def is_opening(self) -> bool | None:
@@ -173,6 +178,24 @@ class FellerCover(CoverEntity):
         response = requests.put("http://"+ip+"/api/loads/"+self._id+"/ctrl", headers= {'authorization':'Bearer ' + self._apikey}, json={'button': "stop", 'event': 'click'})
         _LOGGER.info(response.json())
 
+    def set_cover_tilt_position(self, **kwargs: Any) -> None:
+        self._tilt = kwargs.get(ATTR_TILT_POSITION, 0)
+        ip = self._host
+        response = requests.put("http://"+ip+"/api/loads/"+self._id+"/target_state", headers= {'authorization':'Bearer ' + self._apikey}, json={'tilt': self.translate_cover_tilt_position(self._tilt, (0, 100), (0, 9))})
+        _LOGGER.info(response.json())
+        self._state = True
+        self._tilt = self.translate_cover_tilt_position(response.json()["data"]["target_state"]["tilt"])
+
+    #ha: 0 = closed/no tilt, 100 = open/max tilt
+    #feller: 0 = closed/no tilt, 9 = open/max tilt
+    def translate_cover_tilt_position(value, src_range=(0, 9), tgt_range=(0, 100)):
+        src_min, src_max = src_range
+        tgt_min, tgt_max = tgt_range
+        
+        scale = (tgt_max - tgt_min) / (src_max - src_min)
+        translated_value = tgt_min + (value - src_min) * scale
+    
+        return translated_value
 
     def updatestate(self):
         ip = self._host

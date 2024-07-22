@@ -16,8 +16,10 @@ from .const import (
 
 # Import the device class from the component that you want to support
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.cover import (ATTR_POSITION, ATTR_TILT_POSITION, PLATFORM_SCHEMA,
-                                            CoverEntity)
+from homeassistant.components.cover import (
+    ATTR_POSITION, ATTR_TILT_POSITION, PLATFORM_SCHEMA, CoverEntity,
+    SUPPORT_OPEN, SUPPORT_CLOSE, SUPPORT_SET_POSITION, SUPPORT_STOP, SUPPORT_SET_TILT_POSITION
+)
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -148,6 +150,12 @@ class FellerCover(CoverEntity):
     @property
     def should_poll(self) -> bool | None:
         return False
+    
+    @property
+    def supported_features(self):
+        return (
+            SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_SET_POSITION | SUPPORT_STOP | SUPPORT_SET_TILT_POSITION
+        )
 
     def open_cover(self, **kwargs: Any) -> None:
         self._position = kwargs.get(ATTR_POSITION, 100)
@@ -212,6 +220,10 @@ class FellerCover(CoverEntity):
         #feller: 10000 = closed, 0 = open
         self._position = 100-(load["data"]["state"]["level"]/100)
 
+        #ha: 100 = open, 0 = closed
+        #feller: 0 = closed, 9 = open
+        self._tilt = self.translate_cover_tilt_position(load["data"]["state"]["tilt"])
+
         if load["data"]["state"]["moving"] == "stop":
             self._is_closing = False
             self._is_opening = False
@@ -235,8 +247,9 @@ class FellerCover(CoverEntity):
             self._is_opened = False
             self._is_partially_opened = True
     
-    def updateExternal(self, position, moving):
+    def updateExternal(self, position, moving, tilt):
         self._position = 100-(position/100)
+        self._tilt = self.translate_cover_tilt_position(tilt)
 
         if moving == "stop":
             self._is_closing = False

@@ -199,7 +199,7 @@ class FellerCover(CoverEntity):
     def set_cover_tilt_position(self, **kwargs: Any) -> None:
         self._tilt = kwargs.get(ATTR_TILT_POSITION, 0)
         ip = self._host
-        response = requests.put("http://"+ip+"/api/loads/"+self._id+"/target_state", headers= {'authorization':'Bearer ' + self._apikey}, json={'tilt': self.translate_cover_tilt_position(self._tilt, (0, 100), (0, 4))})
+        response = requests.put("http://"+ip+"/api/loads/"+self._id+"/target_state", headers= {'authorization':'Bearer ' + self._apikey}, json={'tilt': self.translate_cover_tilt_position(self._tilt, (0, 100), (0, 9))})
         _LOGGER.info(response.json())
         self._state = True
         self._tilt = self.translate_cover_tilt_position(response.json()["data"]["target_state"]["tilt"])
@@ -208,7 +208,7 @@ class FellerCover(CoverEntity):
     #feller: 0 = closed/no tilt, 9 = open/max tilt
     #tilt over 4 has no effect in my installation!
     @staticmethod
-    def translate_cover_tilt_position(value, src_range=(0, 4), tgt_range=(0, 100)):
+    def translate_cover_tilt_position(value, src_range=(0, 9), tgt_range=(0, 100)):
         src_min, src_max = src_range
         tgt_min, tgt_max = tgt_range
         

@@ -270,31 +270,16 @@ class FellerCover(CoverEntity):
         if load["data"]["state"]["moving"] == "stop":
             self._is_closing = False
             self._is_opening = False
-        if load["data"]["state"]["moving"] == "up":
+        elif load["data"]["state"]["moving"] == "up":
             self._is_closing = False
             self._is_opening = True
-        if load["data"]["state"]["moving"] == "down":
+        elif load["data"]["state"]["moving"] == "down":
             self._is_closing = True
             self._is_opening = False
 
-        if self._position >= 100:
-            self._is_closed = False
-            self._is_opened = True
-            if self._tilt_position > 0:
-                self._is_partially_opened = True
-            else:
-                self._is_partially_opened = False
-        elif self._position <= 0:
-            self._is_closed = True
-            self._is_opened = False
-            if self._tilt_position > 0:
-                self._is_partially_opened = True
-            else:
-                self._is_partially_opened = False
-        else:
-            self._is_closed = False
-            self._is_opened = False
-            self._is_partially_opened = True
+        self._is_closed = self._position <= 0
+        self._is_opened = self._position >= 100
+        self._is_partially_opened = not self._is_closed and not self._is_opened or self._tilt_position > 0
 
     def updateExternal(self, position, moving, tilt):
         self._position = 100 - (position / 100)
@@ -303,31 +288,15 @@ class FellerCover(CoverEntity):
         if moving == "stop":
             self._is_closing = False
             self._is_opening = False
-        if moving == "up":
+        elif moving == "up":
             self._is_closing = False
             self._is_opening = True
-        if moving == "down":
+        elif moving == "down":
             self._is_closing = True
             self._is_opening = False
 
-        if self._position >= 100:
-            self._is_closed = False
-            self._is_opened = True
-            if self._tilt_position > 0:
-                self._is_partially_opened = True
-            else:
-                self._is_partially_opened = False
-
-        elif self._position <= 0:
-            self._is_closed = True
-            self._is_opened = False
-            if self._tilt_position > 0:
-                self._is_partially_opened = True
-            else:
-                self._is_partially_opened = False
-        else:
-            self._is_closed = False
-            self._is_opened = False
-            self._is_partially_opened = True
+        self._is_closed = self._position <= 0
+        self._is_opened = self._position >= 100
+        self._is_partially_opened = not self._is_closed and not self._is_opened or self._tilt_position > 0
 
         self.schedule_update_ha_state()
